@@ -1,6 +1,7 @@
 import sys
 from lib import timed_run
 from functools import reduce
+from random import randrange
 
 
 @timed_run
@@ -47,5 +48,34 @@ def solve(heights):
     return reduce(lambda x, y: x * y, sorted(basin_sizes)[-3:])
 
 
+def emit_ppm(heights):
+    to_inspect = {(r, c) for r in range(len(heights)) for c in range(len(heights[0])) if heights[r][c] != 9}
+
+    picture = [['0 0 0' for _ in range(len(heights[0]))] for _ in range(len(heights))]
+    used_colors = set()
+
+    while to_inspect:
+        r, c = next(iter(to_inspect))
+
+        rgb = ' '.join(str(randrange(0, 256)) for _ in range(3))
+        while rgb in used_colors:
+            rgb = ' '.join(str(randrange(0, 256)) for _ in range(3))
+        used_colors.add(rgb)
+
+        basin_points = expand_basin(r, c, heights)
+        for r_, c_ in basin_points:
+            picture[r_][c_] = rgb
+        to_inspect -= basin_points
+
+    with open('out.ppm', 'w') as out:
+        out.write('P3\n')
+        out.write(f'{len(heights[0])} {len(heights)}\n')
+        out.write('255\n')
+        for row in picture:
+            out.write(' '.join(row) + '\n')
+
+
 if __name__ == '__main__':
-    print(solve(read_input()))
+    h = read_input()
+    print(solve(h))
+    emit_ppm(h)
