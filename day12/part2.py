@@ -1,6 +1,7 @@
 import sys
 from lib import timed_run
 from collections import defaultdict
+from functools import lru_cache
 
 
 @timed_run
@@ -15,26 +16,24 @@ def read_input():
 
 @timed_run
 def solve(node_to_neighbors):
-    paths = get_to_end('start', tuple(), node_to_neighbors)
-    return len(paths)
+    @lru_cache(None)
+    def count_paths_to_start(node, seen_small, small_visited_twice):
+        if node == 'start':
+            return 1
 
+        if node.islower():
+            if node in seen_small:
+                if small_visited_twice or node == 'end':
+                    return 0
+                small_visited_twice = True
+            seen_small += (node,)
 
-def get_to_end(node, path, node_to_neighbors, small_visited_twice=False):
-    # returns [path, path, path, ...] where path is a tuple(string)
-    next_path = path + (node,)
-    if node == 'end':
-        return [next_path]
+        total = 0
+        for neighbor in node_to_neighbors[node]:
+            total += count_paths_to_start(neighbor, seen_small, small_visited_twice)
+        return total
 
-    if node.islower() and node in path:
-        if node not in ('start', 'end') and not small_visited_twice:
-            small_visited_twice = True
-        else:
-            return list()
-
-    paths = list()
-    for neighbor in node_to_neighbors[node]:
-        paths.extend(get_to_end(neighbor, next_path, node_to_neighbors, small_visited_twice))
-    return paths
+    return count_paths_to_start('end', tuple(), False)
 
 
 if __name__ == '__main__':
