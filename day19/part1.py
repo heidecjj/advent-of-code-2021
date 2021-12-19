@@ -100,11 +100,13 @@ def tuple_add(one, two):
 def match(located, workon):
     if not located:
         return False
+    num_beacons = len(workon.beacons)
     for _ in range(24):  # each rotation
         for known_scanner in located:
             for known_pt in known_scanner.beacons:
                 for pivot in workon.beacons:  # line up one unknown with known_pt
                     matches = 0  # need to find 12
+                    beacons_left = num_beacons
                     translate = tuple_sub(known_pt, pivot)
                     for other in workon.beacons:
                         if tuple_add(other, translate) in known_scanner.beacons:
@@ -112,6 +114,9 @@ def match(located, workon):
                         if matches == 12:
                             workon.center = tuple_add(known_scanner.center, translate)
                             return True
+                        beacons_left -= 1
+                        if beacons_left + matches < 12:
+                            break
         workon.rotate()
     return False
 
@@ -133,7 +138,6 @@ def solve(scanners):
         if match(compare_against, workon):
             located.append(workon)
             print(workon.center)
-            return
         else:
             to_locate.append(workon)
             skip[workon.id].update(s.id for s in compare_against)
