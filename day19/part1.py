@@ -1,6 +1,7 @@
 import sys
 from lib import timed_run
 from dataclasses import dataclass
+from collections import defaultdict
 
 
 def rotate_z(direction=1):
@@ -54,34 +55,37 @@ rotations = (
 
 @dataclass
 class Scanner:
+    id: int
     center: list = None
     rotation: int = 0
-    beacons: list = None
+    beacons: set = None
 
     @property
     def locked_in(self):
         return self.center is not None
 
     def rotate(self):
-        self.beacons = tuple(rotations[self.rotation](point) for point in self.beacons)
+        self.beacons = {rotations[self.rotation](point) for point in self.beacons}
         self.rotation = self.rotation + 1 if self.rotation < 23 else 0
 
 
 @timed_run
 def read_input():
     scanners = list()
+    id = 0
     while True:
-        scanner = list()
+        scanner = set()
         header = sys.stdin.readline()
         if not header.startswith('---'):
             break
         for line in sys.stdin:
             stripped = line.strip()
             if stripped:
-                scanner.append(tuple(int(x) for x in stripped.split(',')))
+                scanner.add(tuple(int(x) for x in stripped.split(',')))
             else:
                 break
-        scanners.append(Scanner(beacons=scanner))
+        scanners.append(Scanner(id=id, beacons=scanner))
+        id += 1
     return scanners
 
 
@@ -94,6 +98,8 @@ def tuple_add(one, two):
 
 
 def match(located, workon):
+    if not located:
+        return False
     for _ in range(24):  # each rotation
         for known_scanner in located:
             for known_pt in known_scanner.beacons:
@@ -105,7 +111,6 @@ def match(located, workon):
                             matches += 1
                         if matches == 12:
                             workon.center = tuple_add(known_scanner.center, translate)
-                            print(workon.center)
                             return True
         workon.rotate()
     return False
@@ -115,16 +120,23 @@ def match(located, workon):
 def solve(scanners):
     to_locate = list(scanners)
     located = list()
+
     origin = to_locate.pop(0)
     origin.center = (0, 0, 0)
     located.append(origin)
 
+    skip = defaultdict(set)  # keep track of failed comparisons so we don't make them again
+
     while to_locate:
         workon = to_locate.pop(0)
-        if match(located, workon):
+        compare_against = tuple(s for s in located if s.id not in skip[workon.id])
+        if match(compare_against, workon):
             located.append(workon)
+            print(workon.center)
+            return
         else:
             to_locate.append(workon)
+            skip[workon.id].update(s.id for s in compare_against)
 
     truth = set()
     for scanner in located:
