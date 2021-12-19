@@ -1,0 +1,42 @@
+```commandline
+$ python3 part1.py < input.txt
+read_input: 0.0012618000037036836
+(1345, 6, 107)
+(-34, 85, -1193)
+(-3, -15, -2245)
+(89, 11, -3550)
+(71, 69, -4818)
+(4, -1098, -3554)
+(56, 67, -5949)
+(-27, 1299, -3572)
+(1315, -31, -4751)
+(-1085, -58, -5842)
+(-1221, -26, -4764)
+(1310, 133, -6008)
+(1340, -37, -7123)
+(1202, 8, -3438)
+(1307, -1210, -5991)
+(117, -2299, -3519)
+(-36, 2485, -3558)
+(1224, 1325, -3545)
+(78, -2429, -2231)
+(2395, 133, -3474)
+(95, 3646, -3433)
+(147, -3613, -2366)
+(-48, 2519, -2343)
+(-31, 3683, -4764)
+(1324, 2484, -2397)
+(123, 4828, -4691)
+solve: 308.57337030000053
+355
+```
+
+Cheated a bit on this one. I had printed out the location
+of each scanner in part 1 to measure progress. Instead of
+recalculating all scanner locations, I copy/pasted the locations
+into  `centers_from_part1.txt` which became my input for part 2:
+```commandline
+$ python3 part2.py < centers_from_part1.txt
+cheat: 0.0008322999929077923
+10842
+```
